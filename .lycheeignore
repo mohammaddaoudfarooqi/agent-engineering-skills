@@ -1,0 +1,5 @@
+# skills.sh project page — returns 404 until skills.sh indexes the repo
+# (typically minutes to hours after the repo goes public or gets its first
+# install). The badge URL (/b/...) works immediately. Remove this line once
+# https://skills.sh/mohammaddaoudfarooqi/agent-engineering-skills returns 200.
+^https://skills\.sh/mohammaddaoudfarooqi/agent-engineering-skills$
