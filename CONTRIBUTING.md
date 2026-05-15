@@ -4,8 +4,13 @@ Thanks for your interest in contributing to `agent-engineering-skills`.
 
 ## Ways to contribute
 
-- **File an issue** — bug reports, unclear instructions in a SKILL.md,
-  failed scenarios, or feature requests.
+- **Start a [Discussion](https://github.com/mohammaddaoudfarooqi/agent-engineering-skills/discussions)** —
+  for open-ended questions, ideas, or "should I open an issue for this?"
+  uncertainty. Use *Q&A* for usage help, *Ideas* for feature proposals,
+  *Show and tell* if you've used a skill on something interesting.
+- **File an [issue](https://github.com/mohammaddaoudfarooqi/agent-engineering-skills/issues)** —
+  bug reports, unclear instructions in a SKILL.md, failed scenarios,
+  or concrete feature requests with a clear definition of done.
 - **Improve an existing skill** — sharper rules, better templates, fixes
   for cases the router gets wrong, additional reference material.
 - **Propose a new skill** — see below.
@@ -29,8 +34,10 @@ all three criteria:
    discipline (or compose several). Cite sources. Don't reinvent
    methodology — focus the work on the agent-orchestration layer.
 
-Open an issue with a one-page proposal before writing the skill. We'll
-talk through scope and naming first.
+Start a [Discussion](https://github.com/mohammaddaoudfarooqi/agent-engineering-skills/discussions/new?category=ideas)
+under *Ideas* with a one-page proposal before writing the skill. We'll
+talk through scope and naming first. Once the proposal converges, an
+issue is opened to track the implementation work.
 
 ## Skill format
 
@@ -83,6 +90,7 @@ you grant that license for your contribution.
 
 ## Questions
 
-Open an [issue](https://github.com/mohammaddaoudfarooqi/agent-engineering-skills/issues).
-For broader conversations, [Discussions](https://github.com/mohammaddaoudfarooqi/agent-engineering-skills/discussions)
-may be enabled — check the repo's main page.
+For usage help or open-ended questions, ask in
+[Discussions → Q&A](https://github.com/mohammaddaoudfarooqi/agent-engineering-skills/discussions/categories/q-a).
+For confirmed bugs and concrete feature requests, open an
+[issue](https://github.com/mohammaddaoudfarooqi/agent-engineering-skills/issues).

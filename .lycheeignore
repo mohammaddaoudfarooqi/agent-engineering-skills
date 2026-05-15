@@ -9,6 +9,3 @@
 # GitHub release URLs — 200 once v0.1.0 is tagged and a release is created.
 ^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/releases/tag/v0\.1\.0$
 ^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/compare/v0\.1\.0\.\.\.HEAD$
-
-# GitHub Discussions — 200 once Discussions is enabled in repo settings.
-^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/discussions$
