@@ -1,0 +1,42 @@
+# agent-engineering-skills
+
+> Engineering discipline for AI coding agents. Three skills built on the
+> Workflow Router pattern that cover the core engineering loop:
+> build → ship → document. Tool-agnostic, installable via the skills.sh
+> CLI on Claude Code, Cursor, Codex, Gemini, Cline, OpenCode, and more.
+
+## Skills
+
+- [spec-driven-tdd](skills/spec-driven-tdd/SKILL.md): Disciplined spec-driven TDD with greenfield, brownfield, refactor, and bugfix workflows. Use when adding a feature, building a module, refactoring, or fixing a complex bug.
+- [github-actions](skills/github-actions/SKILL.md): Production-grade GitHub Actions workflow generation with greenfield, brownfield, and audit workflows. Use for CI/CD setup, workflow hardening, or pipeline audits.
+- [doc-authoring](skills/doc-authoring/SKILL.md): Diataxis-classified documentation with greenfield, brownfield, and audit workflows. Use for READMEs, API references, architecture docs, developer guides, and doc audits.
+
+## Patterns
+
+- [Workflow Router Pattern](docs/workflow-router-pattern.md): The unifying scaffold. Router classifies the request into greenfield/brownfield/refactor/bugfix/audit, runs only the relevant phases, converges on shared verification.
+
+## Documentation
+
+- [README](README.md): Install instructions, quickstart, use cases.
+- [Getting Started](docs/getting-started.md): Tutorial — install and run your first skill in ten minutes.
+- [Skill Format Reference](docs/skill-format-reference.md): Frontmatter, body structure, validator rules.
+- [CONTRIBUTING](CONTRIBUTING.md): Skill format, PR guide, criteria for new skills.
+- [CHANGELOG](CHANGELOG.md): Version history.
+
+## Agent context files
+
+- [CLAUDE.md](CLAUDE.md): Auto-loaded by Claude Code.
+- [GEMINI.md](GEMINI.md): Auto-loaded by Gemini CLI.
+- [AGENTS.md](AGENTS.md): Cross-agent convention (Codex, Cursor, Cline, OpenCode).
+
+## Install
+
+```bash
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills
+```
+
+## Optional
+
+- [Issue template](.github/ISSUE_TEMPLATE/bug_report.yml): Structured bug reports.
+- [Validate-skills workflow](.github/workflows/validate-skills.yml): Self-validating CI (frontmatter + Workflow Router presence + markdown links).
+- [License](LICENSE): Apache-2.0.

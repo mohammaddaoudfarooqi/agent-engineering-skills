@@ -1,0 +1,14 @@
+# URLs that will 404 until external systems index this repo or until
+# specific repo events occur. Remove entries from this file once they
+# resolve.
+
+# skills.sh badge and project page — 200 once skills.sh has indexed the repo.
+^https://skills\.sh/b/mohammaddaoudfarooqi/agent-engineering-skills$
+^https://skills\.sh/mohammaddaoudfarooqi/agent-engineering-skills$
+
+# GitHub release URLs — 200 once v0.1.0 is tagged and a release is created.
+^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/releases/tag/v0\.1\.0$
+^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/compare/v0\.1\.0\.\.\.HEAD$
+
+# GitHub Discussions — 200 once Discussions is enabled in repo settings.
+^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/discussions$
