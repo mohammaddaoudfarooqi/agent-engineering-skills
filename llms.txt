@@ -32,7 +32,7 @@
 ## Install
 
 ```bash
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --all
 ```
 
 ## Optional

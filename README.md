@@ -73,34 +73,35 @@ phase boundary.
 
 ## Install
 
-### Recommended: skills.sh
-
-The [skills.sh](https://www.skills.sh) CLI handles installation for 55+
-agents (Claude Code, Cursor, Codex, Copilot, OpenCode, Cline, Gemini,
-Windsurf, and more) with a single command:
+**One command, no questions asked:**
 
 ```bash
-# Recommended: install globally so skills follow you across projects
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g
-
-# Or: install into the current project only (omit -g)
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills
-
-# Just one skill
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --skill spec-driven-tdd
-
-# Specific agents only
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g -a claude-code -a cursor
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --all
 ```
 
-| Scope | Flag | Where | When |
-| --- | --- | --- | --- |
-| Global | `-g` | `~/.<agent>/skills/` | Everyday use across all projects. |
-| Project | *(default)* | `./.<agent>/skills/` | Pin a version per-project or commit with the team. |
+This installs all three skills globally for every supported agent —
+Claude Code, Cursor, Codex, Copilot, OpenCode, Cline, Gemini CLI,
+Windsurf, and 50+ more. Skills only activate when you launch the agent
+that reads them; nothing runs in the background.
 
-The CLI symlinks (or copies) the right files into each agent's expected
-directory layout. See [`vercel-labs/skills`](https://github.com/vercel-labs/skills)
-for the full CLI reference.
+### Other install patterns
+
+```bash
+# Just one specific agent
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g -a claude-code -y
+
+# Just one specific skill
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --skill spec-driven-tdd -y
+
+# Project-local instead of global (commit with your team, omit -g)
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills --all
+
+# Interactive mode (omit -y/--all) to pick skills and agents manually
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills
+```
+
+See [`vercel-labs/skills`](https://github.com/vercel-labs/skills) for the
+full CLI reference.
 
 ### Claude Code (manual)
 

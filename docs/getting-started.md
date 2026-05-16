@@ -50,25 +50,30 @@ You now have a one-file project with no documentation. Perfect.
 
 ## Step 2: Install the skills
 
-You have two install scopes. **For this tutorial, install globally** so
-the skills are available across every project you work in:
+Run this single command. No prompts:
 
 ```bash
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --all
 ```
 
-| Scope | Flag | Where it installs | When to use |
-| --- | --- | --- | --- |
-| **Global** *(recommended)* | `-g` | `~/.<agent>/skills/` | Everyday use — skills follow you across projects. |
-| Project | *(default)* | `./.<agent>/skills/` (run from project root) | Pin specific skill versions per project, or commit them with the project so teammates get the same set. |
+What this does:
 
-The CLI asks which skills to install and which agents to install them
-for. Pick all three skills and your agent. The CLI symlinks each skill
-into the directory your agent expects (e.g., `~/.claude/skills/` for
-Claude Code in global mode).
+- `-g` — install globally so the skills follow you across every project
+  (instead of just this tutorial folder).
+- `--all` — install all three skills, for every supported agent, with no
+  interactive prompts.
 
-After it finishes, the CLI prints a summary of what was installed and
-where. The exact format depends on your CLI version.
+You should see something like *"Found 3 skills"* followed by a summary
+of where each skill was installed. Each agent has its own location
+(`~/.claude/skills/` for Claude Code, `~/.cursor/skills/` for Cursor,
+and so on). The CLI symlinks one canonical copy into each location.
+
+If you want to limit the install to one agent, use `-a`:
+
+```bash
+# Only Claude Code
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g -a claude-code -y
+```
 
 ## Step 3: Invoke `doc-authoring`
 
