@@ -76,7 +76,7 @@ phase boundary.
 **One command, no questions asked:**
 
 ```bash
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --all
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --all -y
 ```
 
 This installs all three skills globally for every supported agent —
@@ -94,7 +94,7 @@ npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g -a claude-code -
 npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --skill spec-driven-tdd -y
 
 # Project-local instead of global (commit with your team, omit -g)
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills --all
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills --all -y
 
 # Interactive mode (omit -y/--all) to pick skills and agents manually
 npx skills add mohammaddaoudfarooqi/agent-engineering-skills

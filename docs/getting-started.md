@@ -53,15 +53,15 @@ You now have a one-file project with no documentation. Perfect.
 Run this single command. No prompts:
 
 ```bash
-npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --all
+npx skills add mohammaddaoudfarooqi/agent-engineering-skills -g --all -y
 ```
 
 What this does:
 
 - `-g` — install globally so the skills follow you across every project
   (instead of just this tutorial folder).
-- `--all` — install all three skills, for every supported agent, with no
-  interactive prompts.
+- `--all` — install all three skills, for every supported agent.
+- `-y` — skip every confirmation prompt for a clean one-shot install.
 
 You should see something like *"Found 3 skills"* followed by a summary
 of where each skill was installed. Each agent has its own location
