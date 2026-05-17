@@ -103,6 +103,18 @@ npx skills add mohammaddaoudfarooqi/agent-engineering-skills
 See [`vercel-labs/skills`](https://github.com/vercel-labs/skills) for the
 full CLI reference.
 
+### Updating
+
+To pull the latest version of every installed skill:
+
+```bash
+npx skills update -g
+```
+
+The CLI reports which skills changed. Running agents pick up the new
+content on their next message — no restart needed. See the
+[CHANGELOG](CHANGELOG.md) for what's new.
+
 ### Claude Code (manual)
 
 If you prefer not to use the CLI:
