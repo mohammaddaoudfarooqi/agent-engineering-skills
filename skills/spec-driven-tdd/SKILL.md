@@ -1,27 +1,29 @@
 ---
 name: spec-driven-tdd
 description: >
-  Disciplined spec-driven test-driven development workflow for building software
-  with AI coding agents. Transforms ambiguous requests into verified implementations
-  through structured specification, test derivation, and strict TDD.
-  Handles greenfield projects, brownfield enhancements (with or without existing
-  tests), refactors, and complex bug fixes with workflow-specific guidance for each.
-  Use when the user requests a new feature, module, enhancement, refactor, API,
-  data pipeline, CLI tool, or system with multiple requirements, edge cases, or
-  unclear specifications. Also use for complex bug fixes requiring root cause analysis.
-  Triggers on phrases like "add a feature", "implement", "build a new module",
-  "build an API", "build a CLI", "build a data pipeline", "refactor", "fix this
-  bug", "write tests for", "TDD", "test-first", "the requirements are unclear",
-  "characterization tests", or "spec this out". Triggers when modifying code
-  with adjacent test files (`tests/`, `*_test.py`, `*.test.ts`, `*.spec.ts`,
-  `spec/`, `__tests__/`) or test framework config (pytest.ini, jest.config.*,
-  go.mod with testing imports, Cargo.toml with [dev-dependencies], package.json
-  with a test script). Triggers when the user mentions edge cases, invariants,
-  acceptance criteria, EARS notation, red-green-refactor, smoke tests,
-  functional tests, mock parity, or boundary inventory.
-  Do NOT use for simple one-line fixes, cosmetic changes, formatting, renames,
-  dependency bumps, or tasks where requirements are already fully specified
-  with tests provided.
+  Spec-driven test-driven development for AI coding agents. Transforms
+  ambiguous requests into verified implementations through structured
+  specs, derived tests, and strict TDD. Verifies on two axes: coverage
+  and realism (smoke tier, mock-parity, boundary inventory, phase-end
+  demo).
+  Handles greenfield, brownfield (with or without tests), refactors,
+  and complex bug fixes with workflow-specific guidance.
+  Use when the user requests a new feature, module, enhancement,
+  refactor, API, data pipeline, CLI tool, or system with multiple
+  requirements, edge cases, or unclear specifications. Also use for
+  complex bug fixes requiring root cause analysis.
+  Triggers on phrases like "add a feature", "implement", "build a
+  module", "build an API", "build a CLI", "refactor", "fix this bug",
+  "write tests for", "TDD", "test-first", "characterization tests",
+  "spec this out", "smoke tests", "mock parity", or "boundary
+  inventory". Triggers when modifying code with adjacent test files
+  (`tests/`, `*_test.py`, `*.spec.ts`, `__tests__/`) or test config
+  (`pytest.ini`, `jest.config.*`, `go.mod` testing, `Cargo.toml`
+  dev-dependencies). Triggers when the user mentions edge cases,
+  invariants, acceptance criteria, EARS notation, or red-green-refactor.
+  Do NOT use for one-line fixes, cosmetic changes, formatting, renames,
+  dependency bumps, or tasks where requirements are already fully
+  specified with tests provided.
 ---
 
 # Spec-Driven Test-Driven Development

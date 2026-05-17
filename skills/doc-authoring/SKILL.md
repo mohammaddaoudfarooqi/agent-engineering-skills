@@ -1,30 +1,27 @@
 ---
 name: doc-authoring
 description: >
-  Systematic documentation authoring workflow for AI coding agents. Analyzes
-  repositories to determine what documentation is needed, classifies each
-  document by Diataxis type (tutorial, how-to, reference, explanation),
-  and generates accurate, maintainable documentation that stays synchronized
-  with the codebase.
-  Handles greenfield projects (no docs exist), brownfield updates (refresh,
-  enhance, rewrite existing docs), and doc audits with workflow-specific
-  guidance for each.
-  Use when the user requests documentation for a project: README creation,
-  API reference, architecture docs, developer guides, changelogs, or any
-  technical writing tied to a codebase. Also use when existing docs need
-  auditing, updating, rewriting, or restructuring.
+  Documentation authoring for AI coding agents. Analyzes a repo and
+  generates docs classified by Diataxis type (tutorial, how-to,
+  reference, explanation), kept synchronized with the code.
+  Handles greenfield (no docs exist), brownfield (refresh, enhance,
+  rewrite), and doc audits with workflow-specific guidance.
+  Use when the user requests project documentation: a README, API
+  reference, architecture doc, developer guide, contributing guide,
+  changelog, ADR, onboarding doc, or any technical writing tied to a
+  codebase. Also use when existing docs need an audit, refresh, or
+  restructure.
   Triggers on phrases like "write a README", "document this project",
-  "API reference", "architecture doc", "developer guide", "getting started
-  guide", "tutorial", "how-to", "audit our docs", "what docs are missing",
-  "refresh the docs", "Diataxis", "doc the public API", "write a CHANGELOG",
-  "explain this codebase", "onboarding doc", or "ADR". Triggers when
-  creating or editing `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`,
-  `docs/`, `mkdocs.yml`, `docusaurus.config.*`, `sphinx`/`conf.py`, ADRs,
-  or any markdown file paired with code. Triggers when public APIs, CLI
-  flags, configuration options, or environment variables change and the
-  user wants the docs kept in sync.
+  "API reference", "architecture doc", "developer guide", "tutorial",
+  "how-to", "audit our docs", "what docs are missing", "refresh the
+  docs", "Diataxis", "write a CHANGELOG", "onboarding doc", or "ADR".
+  Triggers when creating or editing `README.md`, `CONTRIBUTING.md`,
+  `CHANGELOG.md`, files under `docs/`, `mkdocs.yml`, Docusaurus or
+  Sphinx config, or any markdown paired with code. Also triggers when
+  a public API, CLI flag, config option, or env var changes and the
+  user wants docs kept in sync.
   Do NOT use for standalone prose, marketing copy, blog posts, design
-  documents, RFCs unrelated to a codebase, or documents where the source
+  documents or RFCs unrelated to a codebase, or documents whose source
   of truth is not source code.
 ---
 

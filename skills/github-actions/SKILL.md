@@ -1,30 +1,28 @@
 ---
 name: github-actions
 description: >
-  Systematic GitHub Actions workflow authoring skill for AI coding agents.
-  Analyzes repositories to determine project type, language ecosystem, and
-  deployment targets, then generates production-grade CI/CD workflows with
-  proper security hardening, caching, and optimization.
-  Handles greenfield projects (no workflows exist), brownfield updates
-  (modify, optimize, secure existing workflows), and workflow audits with
-  workflow-specific guidance for each.
+  GitHub Actions workflow authoring for AI coding agents. Analyzes a
+  repo's project type, language, and deployment targets, then generates
+  production-grade CI/CD workflows with security hardening, caching,
+  and optimization.
+  Handles greenfield (no workflows exist), brownfield (modify, optimize,
+  secure existing), and audits with workflow-specific guidance.
   Use when the user requests GitHub Actions workflows: CI pipelines, CD
-  deployments, release automation, scheduled jobs, or any .github/workflows
-  YAML authoring. Also use when existing workflows need auditing, optimizing,
-  securing, or restructuring.
+  deployments, release automation, scheduled jobs, or any
+  `.github/workflows/` YAML authoring. Also use when existing workflows
+  need auditing, optimizing, or hardening.
   Triggers on phrases like "set up CI", "add CI/CD", "GitHub Actions
-  workflow", "release automation", "deploy on tag", "publish to npm/PyPI",
-  "schedule a job", "cron workflow", "matrix build", "workflow.yml",
-  "actions/checkout", "permissions", "harden this pipeline", "pin actions
-  to SHA", "OIDC", "least privilege", "supply-chain", "audit my workflows",
-  "speed up CI", or "cache dependencies". Triggers when creating or editing
-  files under `.github/workflows/`, `action.yml`/`action.yaml` (composite or
-  Docker actions), or `.github/dependabot.yml`. Triggers when the user
-  mentions migrating from GitLab CI, CircleCI, Travis, Jenkins, Drone, or
-  Buildkite to GitHub Actions.
-  Do NOT use for non-GitHub CI systems (GitLab CI, CircleCI, Jenkins) unless
-  the user is migrating TO GitHub Actions. Do NOT use for general bash
-  scripting, Makefiles, or local-only build configuration.
+  workflow", "release automation", "deploy on tag", "publish to
+  npm/PyPI", "cron workflow", "matrix build", "harden this pipeline",
+  "pin actions to SHA", "OIDC", "least privilege", "supply-chain",
+  "audit my workflows", or "cache dependencies". Triggers when creating
+  or editing files under `.github/workflows/`, `action.yml` /
+  `action.yaml` (composite or Docker actions), or
+  `.github/dependabot.yml`. Triggers when migrating from GitLab CI,
+  CircleCI, Travis, Jenkins, Drone, or Buildkite to GitHub Actions.
+  Do NOT use for non-GitHub CI systems unless migrating TO GitHub
+  Actions. Do NOT use for general bash scripting, Makefiles, or
+  local-only build configuration.
 ---
 
 # GitHub Actions Workflow Authoring

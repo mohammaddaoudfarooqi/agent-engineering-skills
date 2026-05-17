@@ -84,8 +84,17 @@ Order content as follows:
    applies.
 6. **Do NOT use** — sentence beginning "Do NOT use..." listing exclusions.
 
-The combined description SHOULD be between 600 and 2000 characters.
-Skills in this repository range from 1500 to 1700 characters.
+The combined description SHOULD be between 600 and 1500 characters.
+Skills in this repository target ~1400 characters to stay under
+**Claude Code's 1536-character per-skill cap**
+(`skillListingMaxDescChars` in Claude Code `settings.json`). Beyond
+the cap, Claude Code shortens descriptions automatically — usually by
+truncating the trailing trigger keywords, which hurts auto-invocation
+accuracy. Other agents have similar caps.
+
+If you need longer descriptions (e.g., for an internal skill where you
+control the agent config), users can raise the cap, but the trade-off
+is more tokens spent on skill listings every session.
 
 ## Body
 
