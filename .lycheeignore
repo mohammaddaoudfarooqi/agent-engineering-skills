@@ -3,8 +3,3 @@
 # install). The badge URL (/b/...) works immediately. Remove this line once
 # https://skills.sh/mohammaddaoudfarooqi/agent-engineering-skills returns 200.
 ^https://skills\.sh/mohammaddaoudfarooqi/agent-engineering-skills$
-
-# v0.2.0 release tag — resolves once `git tag v0.2.0 && gh release create v0.2.0`
-# has run. Remove this line once that's done.
-^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/releases/tag/v0\.2\.0$
-^https://github\.com/mohammaddaoudfarooqi/agent-engineering-skills/compare/v0\.2\.0\.\.\.HEAD$
