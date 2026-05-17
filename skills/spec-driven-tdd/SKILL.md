@@ -17,7 +17,8 @@ description: >
   `spec/`, `__tests__/`) or test framework config (pytest.ini, jest.config.*,
   go.mod with testing imports, Cargo.toml with [dev-dependencies], package.json
   with a test script). Triggers when the user mentions edge cases, invariants,
-  acceptance criteria, EARS notation, or red-green-refactor.
+  acceptance criteria, EARS notation, red-green-refactor, smoke tests,
+  functional tests, mock parity, or boundary inventory.
   Do NOT use for simple one-line fixes, cosmetic changes, formatting, renames,
   dependency bumps, or tasks where requirements are already fully specified
   with tests provided.
@@ -88,6 +89,28 @@ Existing test infrastructure = ANY of these found:
 - CI config that runs tests
 
 No test infrastructure = NONE of the above found.
+
+## Two Axes of Verification
+
+Verification has **two orthogonal dimensions**, not one. A spec that scores
+high on one axis but low on the other ships systems that pass every gate
+and still fail on first real traffic.
+
+| Axis | Question | Failure mode if missing |
+| --- | --- | --- |
+| **Coverage** | How many requirements / behaviors / lines / branches are exercised? | Untested requirements, silent regressions |
+| **Realism** | Does any test cross a real boundary — real HTTP, real DB, real LLM, real browser, real process? | Mock/prod divergence, unawaited coroutines, FE↔BE drift, 0% adapters |
+
+Most TDD discipline optimises the coverage axis. This skill **also**
+requires the realism axis: a smoke / functional tier, mock-parity
+contracts, boundary inventories, phase-end demos, and outcome-vs-side-
+effect assertions. They are not optional add-ons; they are how this
+skill avoids producing systems that "pass every test and still don't
+work."
+
+The phases below enforce both axes. When a phase says *"required"* for
+a realism artifact, refusing to produce it means refusing to mark the
+phase complete.
 
 ## Phase 0: Explore Existing Codebase (Brownfield Only)
 
@@ -278,6 +301,67 @@ Do NOT rewrite the entire architecture. Reference existing design.
 - **Naming convention:** [pattern, e.g., *.test.ts, test_*.py]
 ```
 
+### Premortem section (required in requirements.md, all workflows except Bugfix)
+
+Before finalising requirements, list **the top 5 ways this will fail in
+production** and an EARS-form mitigation for each. This is required —
+not advisory. It forces the spec author to think one level past *"what
+is the requirement"* into *"what will go wrong at the seams."*
+
+```
+## Premortem
+
+| # | Failure mode | Mitigation (EARS) |
+| - | --- | --- |
+| 1 | Mongomock returns sync values; production AsyncMongoClient returns coroutines. Tests pass; routes fail. | THE SYSTEM SHALL include a mock-parity contract test asserting the fake returns awaitable values for every async DB method used. |
+| 2 | LLM provider returns a 503 mid-stream; partial output is persisted as final. | WHEN an LLM stream errors mid-response THE SYSTEM SHALL discard the partial buffer and surface a retry-able error. |
+| ... | ... | ... |
+```
+
+Each mitigation must produce at least one acceptance test. Every entry
+in the premortem should have a corresponding requirement (existing or
+new) that drives a test.
+
+### Boundary Inventory (required in design.md, all multi-component workflows)
+
+A "boundary" is any place where the runtime model changes:
+
+- sync → async
+- mock → real (test fake → production dependency)
+- frontend → backend
+- in-process → out-of-process
+- JSON → Python / TypeScript / Go object (de/serialisation)
+- single thread → multi-process / multi-machine
+- HTTP → SSE / WebSocket / streaming
+
+Every boundary in the system must appear in `design.md` under a
+**Boundary Inventory** section, with at least one acceptance test
+referenced by ID.
+
+```
+## Boundary Inventory
+
+| # | Boundary | From | To | Acceptance test |
+| - | --- | --- | --- | --- |
+| 1 | HTTP entry | external client | FastAPI route | TC-SMOKE-001 (curl over uvicorn) |
+| 2 | Sync→Async DB | route handler | AsyncMongoClient | TC-PARITY-001 (mongomock vs Atlas) |
+| 3 | FE→BE | React fetch | /api/sessions | TC-SMOKE-002 (Playwright + live BE) |
+| 4 | Persisted state | Repository | MongoDB Atlas | TC-INTEG-LIVE-001 (testcontainers) |
+| 5 | LLM stream | Backend SSE | Browser EventSource | TC-SMOKE-003 (websocat or playwright-cli) |
+| ... | ... | ... | ... | ... |
+```
+
+If a boundary has **no** acceptance test, the design is not done. This
+is the structural fix for the entire class of "passed every test, broke
+on first real request" failures.
+
+For single-component pure-function libraries with no I/O, document this
+explicitly: *"No service-to-service boundaries; all behaviour is
+in-process pure functions."* Then this section is satisfied.
+
+See [references/test-tiers.md](references/test-tiers.md) for which test
+tiers cover which boundaries.
+
 ### Bugfix: bugfix.md
 
 Three-section format:
@@ -360,6 +444,20 @@ framework but the one the team (or a future developer) will expect.
    ```
    Run it. If it passes, infrastructure is ready. Delete or keep the smoke
    test as appropriate.
+
+6. **(Strongly recommended) Add a thinnest-possible live integration
+   test against the riskiest external boundary.** For a project that
+   touches a database, write a hello-world round-trip against a real
+   ephemeral instance (testcontainers, docker compose). For a project
+   that touches an LLM, record a single-call cassette (VCR / pytest-
+   recording) against the real provider. Cost: a few seconds per CI
+   run. Benefit: every subsequent phase is built on a layer that has
+   been proven to work against real infrastructure, not just a fake.
+
+   This is *recommended*, not mandated, because some teams cannot
+   easily provision a real test instance at bootstrap. If you defer it,
+   put a `TODO(live-integration)` marker in `design.md` so the
+   omission is visible.
 
 ### Step 3: Establish test conventions
 
@@ -475,6 +573,84 @@ If you bootstrapped tests in Phase 3:
    - If tests already exist: existing tests cover this
    - If no tests existed: characterization tests from Phase 3 cover this
 5. **Identify properties** (invariants for all inputs) → property-based tests
+6. **Each top-level user story → at least one smoke / functional test**
+   that starts the deployable artifact and asserts user-visible outcomes.
+   See [references/test-tiers.md](references/test-tiers.md).
+7. **Each boundary in the boundary inventory → at least one acceptance
+   test that crosses it for real** (real HTTP, real DB, real browser,
+   real process). Boundaries listed in `design.md`'s Boundary Inventory
+   without a test ID are blockers.
+8. **Each fake / mock → at least one mock-parity contract test** that
+   asserts the fake matches the real dependency for the methods used.
+   See [references/mock-parity.md](references/mock-parity.md).
+
+### Outcome-vs-side-effect rule (required)
+
+Every requirement's primary acceptance test must assert the outcome
+**stated in the requirement**, not a proxy side effect.
+
+- ❌ "POST /sessions produces a research report" → asserts `db.sessions.find_one() is not None` (side effect along the way)
+- ✅ "POST /sessions produces a research report" → asserts `len(report.content) > 0` and the report contains the topic the user requested (the stated outcome)
+
+Side-effect assertions are valuable as supplementary checks. They are
+not sufficient as the primary acceptance for a behavioural requirement.
+If the requirement says *"the system produces X"*, at least one test
+must observe X.
+
+### Mock realism contract (required for every fake)
+
+Whenever the test plan introduces a fake that stands in for an external
+dependency (e.g., `mongomock` for `AsyncMongoClient`, `FakeLLM` for
+Gemini, `moto` for AWS), it must also introduce a mock-parity contract
+test:
+
+- Run the same call against the fake and against the real dependency
+  (testcontainers, recorded cassette, sandbox account).
+- Assert observable behaviour matches: return shape, async-ness, error
+  taxonomy.
+
+This is the structural fix for the unawaited-coroutine class of bugs
+(fake returns a value, real returns a coroutine, code never awaits, all
+unit tests pass). One contract test per fake is enough.
+
+See [references/mock-parity.md](references/mock-parity.md) for patterns.
+
+### Test isolation contract (required for state-mutating tests)
+
+Tests that mutate persistent state — database rows, files, env vars,
+service registries, prompt registries, feature flags — must declare
+what they mutate and own teardown.
+
+- Declare mutations in test metadata (e.g., a marker, a fixture name, a
+  module-level docstring): `@pytest.mark.mutates_state(["prompts.compose_report"])`,
+  or the equivalent in your stack.
+- Provide a teardown / rollback fixture that restores the prior state.
+- Never use a production stage / production registry / production key
+  as the target of a state-mutating test, even if it is convenient.
+
+This prevents the failure mode where one test pollutes shared state and
+the next test reads the polluted state as ground truth.
+
+### Two-axis coverage (required for non-trivial systems)
+
+Replace single-aggregate coverage thresholds with **two floors**:
+
+- **Aggregate floor**: ≥ X% line + branch coverage on the declared
+  source directories.
+- **Per-module floor**: no individual module under Y% in the same
+  directories.
+
+```
+- REQ-NF-COV: THE SYSTEM SHALL maintain at minimum 80% line + branch
+  coverage on `src/`, with no individual module below 60%.
+```
+
+The per-module floor catches 0% adapters that hide behind well-tested
+neighbours. An aggregate-only threshold is insufficient: a 0% module
+can sit inside a directory that averages 85%.
+
+For pure-library projects with no production-only adapters, a single
+aggregate threshold is acceptable.
 
 ### Traceability
 
@@ -540,13 +716,42 @@ Execute tasks from tasks.md using strict TDD. This is NON-NEGOTIABLE.
 ### For each task:
 
 ```
-1. RED    - Write failing test(s) for the task's requirements
-2. RUN    - Execute test, confirm it FAILS (if it passes, test is wrong)
-3. GREEN  - Write MINIMAL code to make the test pass
-4. RUN    - Execute ALL tests (new + existing), confirm ALL pass
+1. RED      - Write failing test(s) for the task's requirements
+2. RUN      - Execute test, confirm it FAILS (if it passes, test is wrong)
+3. GREEN    - Write MINIMAL code to make the test pass
+4. RUN      - Execute ALL tests (new + existing), confirm ALL pass
 5. REFACTOR - Clean up, ensure no test breakage
-6. COMMIT - Mark task complete in tasks.md
+6. DEMO     - Start the deployable artifact and exercise the new behavior
+7. COMMIT   - Mark task complete in tasks.md
 ```
+
+### Phase-end Demo gate (required)
+
+A task / phase is **not complete** when the tests are green. It is
+complete when the deployable artifact has been started and the new
+behaviour observed end-to-end. This catches integration-shaped bugs
+that no test pyramid can prevent.
+
+For each task, capture the demo evidence in `tasks.md` under the task:
+
+```
+- **Demo:**
+  - HTTP backend: paste curl/httpie output showing the new endpoint
+    returning the expected status and body.
+  - Frontend: paste a playwright-cli snapshot or screenshot showing
+    the new UI, OR a short transcript of clicks + observed result.
+  - CLI tool: paste the command and its output.
+  - Library / pure code: explicitly state "no demo applicable; tests
+    cover the full surface."
+  - Background job: paste log lines or queue state showing the job ran.
+```
+
+If you cannot produce a demo because the deployable artifact does not
+yet start at this phase, **the boundary inventory and bootstrap phase
+were skipped or insufficient**. Stop and address that before continuing.
+
+See [references/demo-tools.md](references/demo-tools.md) for tools by
+stack (curl/httpie, playwright-cli, websocat, k6, etc.).
 
 ### Running tests (brownfield, tests exist)
 
@@ -606,7 +811,7 @@ standard brownfield workflow. Fix your new code first.
 
 After all tasks complete, verify the full delivery.
 
-### Checklist
+### Coverage-axis checklist
 
 - [ ] **Spec compliance:** Every new requirement has at least one passing test
 - [ ] **All tests pass:** Full test suite green (new AND existing)
@@ -615,6 +820,18 @@ After all tasks complete, verify the full delivery.
 - [ ] **Unchanged behaviors verified:** All INV-* regression tests pass
 - [ ] **Static analysis clean:** No linter errors, type errors, security warnings
 - [ ] **Pattern compliance (brownfield):** New code follows existing conventions
+- [ ] **Aggregate coverage floor met** on declared source directories
+- [ ] **Per-module coverage floor met** — no module silently sits at 0% or below the per-module threshold
+
+### Realism-axis checklist
+
+- [ ] **Smoke / functional tier exists** — at least one test per top-level user story starts the deployable artifact and asserts user-visible outcomes
+- [ ] **Boundary inventory complete** — every entry in `design.md`'s Boundary Inventory has a passing acceptance test that crosses the boundary for real
+- [ ] **Mock-parity tests pass** — every fake has at least one contract test asserting parity with the real dependency for the methods used
+- [ ] **Outcome assertions present** — each behavioural REQ has at least one test that asserts the outcome stated in the REQ, not a proxy side effect
+- [ ] **Phase-end demos recorded** — every task in `tasks.md` carries a Demo block with curl / playwright-cli / screenshot / log evidence, OR an explicit "no demo applicable" note for pure code
+- [ ] **State-mutating tests declare and clean up** — no test leaves persistent state behind for the next test or live run
+- [ ] **Premortem mitigations are tested** — every premortem failure mode in `requirements.md` has a corresponding test
 
 ### Additional no-tests verification
 
@@ -699,12 +916,50 @@ Test fails
 **Never silently change the spec.** Confirm with user first.
 **If stuck after 3 attempts**, ask user for guidance.
 
+## What this skill does not catch
+
+Even with both axes of verification in place, the following classes of
+defect remain the responsibility of human review and downstream
+processes:
+
+- **Non-deterministic LLM regressions.** The smoke tier exercises a
+  real call; it does not guarantee the LLM will produce equally good
+  output tomorrow. Use eval suites with representative prompts and a
+  judge model for ongoing quality.
+- **Capacity under realistic load.** Smoke tests run one user at a
+  time. Use a load tier (k6, locust, wrk) for concurrency, throughput,
+  and tail latency requirements.
+- **End-to-end UX flow review.** Tests assert outcomes; they do not
+  judge whether the flow is the right flow. A human walkthrough at
+  phase boundaries is still required for any user-facing system.
+- **Security review of new attack surface.** Run a security-review
+  pass (or invoke `/security-review`) on any change that adds an HTTP
+  surface, parses untrusted input, or touches authentication.
+- **Production observability and operability.** The skill does not
+  prescribe metrics, logs, traces, alerts, runbooks, or on-call
+  readiness. Add these as explicit requirements when shipping a system
+  others will operate.
+
+This list exists so you don't mistake "all gates green" for "ready to
+operate in production."
+
 ## Reference Files
 
 - **Spec templates**: See [references/spec-template.md](references/spec-template.md)
-  for all templates: Feature, Enhancement, Refactor, Bugfix, and Codebase Context
+  for all templates: Feature, Enhancement, Refactor, Bugfix, Codebase Context,
+  Premortem, and Boundary Inventory
 - **Test plan guide**: See [references/test-plan.md](references/test-plan.md)
-  for test derivation, existing test discovery, characterization tests,
-  traceability, and Given/When/Then
+  for test derivation, the five test tiers, outcome-vs-side-effect rule,
+  existing test discovery, characterization tests, traceability, and
+  Given/When/Then
+- **Test tiers catalog**: See [references/test-tiers.md](references/test-tiers.md)
+  for definitions and per-stack examples of unit / integration / smoke /
+  quality_gate / characterization tiers
+- **Mock parity patterns**: See [references/mock-parity.md](references/mock-parity.md)
+  for how to write contract tests that prove a fake matches the real
+  dependency
+- **Demo tools by stack**: See [references/demo-tools.md](references/demo-tools.md)
+  for phase-end demo tooling — curl, httpie, playwright-cli, websocat,
+  k6, and equivalents
 - **Edge case catalog**: See [references/edge-cases.md](references/edge-cases.md)
   for edge case categories to check during specification

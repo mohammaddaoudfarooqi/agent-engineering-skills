@@ -480,42 +480,135 @@ the change, not before.
 
 ---
 
-## Test Categories
+## Test Tiers
 
-```
-What are you testing?
-  |
-  +-> Single function/method logic
-  |     -> Unit test
-  |
-  +-> Interaction between components
-  |     -> Integration test (real dependencies where feasible)
-  |
-  +-> End-to-end user workflow
-  |     -> Acceptance test (Given/When/Then)
-  |
-  +-> Invariant for ALL inputs
-  |     -> Property-based test
-  |
-  +-> Performance threshold
-  |     -> Benchmark/load test
-  |
-  +-> Existing behavior must not change
-  |     -> Regression test
-  |
-  +-> Refactored code matches original behavior
-  |     -> Property-based equivalence test
-  |
-  +-> Documenting current behavior of untested code before modifying it
-        -> Characterization test (CHAR prefix)
-```
+A non-trivial system needs **five tiers**, not the usual three. Each
+tier crosses a different boundary and catches a different class of
+defect. See [test-tiers.md](test-tiers.md) for per-stack examples.
+
+| Tier | Scope | Crosses real boundary? | Typical runtime | Catches |
+| --- | --- | --- | --- | --- |
+| **unit** | Single function / class / module | No | < 10ms each | Logic bugs, edge cases, branch coverage |
+| **integration** | Interaction between two or more in-process components | Sometimes (with fakes) | 10-500ms each | Wiring bugs, contract drift between modules |
+| **smoke / functional** | A complete user journey via the deployable artifact (uvicorn / docker compose / vite preview) over real HTTP/SSE/WS | **Yes — always** | seconds | Integration-shaped bugs the test pyramid misses: unawaited async, FE↔BE drift, dropped routes, HTTP-layer drift, missing seeding |
+| **quality_gate** | Static analysis — lint, types, security, license, complexity | n/a | seconds | Whole classes of bug at compile time |
+| **characterization** | Documents current behaviour of untested code before changing it | n/a | varies | Silent regressions during brownfield work |
+
+The smoke / functional tier is the addition that distinguishes this
+skill's test pyramid from the typical "unit + integration" model. **It
+is required**, not a nice-to-have, for any system with I/O or multiple
+components. Skipping it produces specs that pass every gate and ship
+systems that don't work end-to-end.
+
+### Smoke / functional tier — characteristics
+
+- Starts the deployable artifact via its real entrypoint
+  (`uvicorn`, `docker compose up`, `npm run preview`, `cargo run`, etc.)
+- Hits it over real transport (HTTP, SSE, WebSocket, multipart, gRPC)
+- Asserts user-visible outcomes — content of a returned report, text
+  in the rendered DOM, a downloaded file's contents — not internal
+  side effects
+- One per top-level user story is the floor; one per critical user
+  journey is the goal
 
 ### Priority order
 
-1. **Characterization tests** (if no tests exist) — Establish baseline BEFORE any changes
-2. **Acceptance tests** — Validate requirements end-to-end (highest value)
-3. **Unit tests** — Cover logic branches, edge cases, validation
-4. **Regression tests** — Protect unchanged behaviors (critical for brownfield)
-5. **Property-based tests** — Verify invariants, refactor equivalence
-6. **Integration tests** — Validate external system interactions
-7. **Performance tests** — Verify non-functional requirements
+1. **Smoke / functional tests** — One per top-level user story. The
+   highest-leverage tier for catching real-world failures.
+2. **Characterization tests** (if no tests exist) — Establish baseline
+   BEFORE any changes.
+3. **Acceptance tests** — Validate requirements end-to-end against the
+   stated outcome.
+4. **Unit tests** — Cover logic branches, edge cases, validation.
+5. **Regression tests** — Protect unchanged behaviors (critical for
+   brownfield).
+6. **Property-based tests** — Verify invariants, refactor equivalence.
+7. **Integration tests** — Validate external system interactions.
+8. **Quality-gate checks** — Lint, type, security, complexity.
+9. **Performance tests** — Verify non-functional requirements.
+
+## Outcome-vs-side-effect rule
+
+Every requirement's primary acceptance test must assert the **outcome
+stated in the requirement**, not a proxy side effect.
+
+| Requirement | ❌ Side-effect proxy | ✅ Outcome assertion |
+| --- | --- | --- |
+| "POST /sessions produces a research report" | `db.sessions.find_one() is not None` | `len(report.content) > 0 and topic in report.content` |
+| "User clicks Generate; report appears in UI" | `fetch was called` | `await expect(page.getByTestId('report')).toContainText(topic)` |
+| "Pipeline emits a `session_end` event with the final report id" | `session.status == 'created'` | SSE consumer receives `event: session_end` and the id resolves to a real document |
+| "GET /prompts returns N stages" | `app.startup completed` | `len(response.json()['stages']) == N` |
+
+Side-effect proxies are valuable as supplementary checks. They are
+not sufficient as the primary acceptance for a behavioural REQ. If
+the REQ says *"the system produces X"*, at least one test must
+observe X.
+
+## Mock realism contract (per fake)
+
+When a test plan introduces a fake to stand in for an external
+dependency, it must also introduce a contract test asserting the fake
+matches the real dependency for the methods used.
+
+For each fake (`mongomock`, `FakeLLM`, `moto`, in-memory queue, fake
+filesystem, etc.), produce one test that:
+
+1. Calls each method actually used by the system on the fake.
+2. Calls the same methods on the real dependency
+   (testcontainers / sandbox / recorded cassette).
+3. Asserts observable behaviour matches: return shape, async-ness,
+   error taxonomy, edge cases relevant to the methods used.
+
+If the contract test diverges, either fix the fake (preferred), wrap
+the real dependency in your own thin adapter, or stop using the fake.
+This is the structural fix for the unawaited-coroutine class of bug,
+where the fake returns a value and the real returns a coroutine.
+
+See [mock-parity.md](mock-parity.md) for stack-specific patterns.
+
+## Test isolation contract (state-mutating tests)
+
+Tests that mutate persistent state — database rows, files on disk,
+environment variables, service registries, prompt versions, feature
+flags, message queues — must:
+
+- **Declare what they mutate** in test metadata (a marker, a fixture
+  name, a docstring, a tag — match your stack's idiom).
+- **Own teardown / rollback** so the next test sees a clean state.
+- **Never target production stages or production registries** even if
+  convenient.
+
+Pytest example:
+```python
+@pytest.mark.mutates_state(["prompts.compose_report"])
+def test_promote_prompt_to_current(prompt_isolation_fixture):
+    ...
+```
+
+Generalise to your stack: Jest can use `beforeEach` / `afterEach` and
+custom matchers; Go can use `t.Cleanup`; ExUnit can use `on_exit`.
+
+This prevents the failure mode where one test pollutes shared state
+and the next test reads the polluted state as ground truth — the
+"junk draft promoted to current; next live LLM run uses garbage" class
+of failure.
+
+## Quality-gate examples by language
+
+The quality_gate tier runs static analyzers as tests. Adopt the
+language-specific gates that match your stack:
+
+| Language | Recommended gates |
+| --- | --- |
+| Python | ruff, mypy --strict, pip-audit, bandit, async-correctness lint (no unawaited coroutines on async APIs like AsyncMongoClient, httpx.AsyncClient) |
+| TypeScript / JavaScript | tsc --noEmit, eslint, npm audit / pnpm audit, knip (unused exports) |
+| Go | go vet, staticcheck, golangci-lint, race detector on tests (`go test -race`) |
+| Rust | cargo clippy --deny warnings, cargo audit, miri for unsafe blocks |
+| Java | spotbugs, errorprone, owasp-dependency-check |
+| Ruby | rubocop, brakeman, bundle-audit |
+
+**Async-correctness gate (Python).** Especially worth singling out:
+add a lint rule that scans `async def` bodies for unawaited calls to
+known-async APIs (PyMongo `Async*`, `httpx.AsyncClient`, asyncio
+primitives). One-time investment, eliminates the unawaited-coroutine
+bug class.

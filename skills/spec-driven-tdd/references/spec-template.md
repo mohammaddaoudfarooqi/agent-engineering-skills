@@ -60,10 +60,27 @@
 ## Non-Functional Requirements
 - REQ-NF-001: THE SYSTEM SHALL [performance/security/accessibility constraint]
 - REQ-NF-002: THE SYSTEM SHALL [constraint with measurable threshold]
+- REQ-NF-COV: THE SYSTEM SHALL maintain at minimum [X]% line + branch
+  coverage on `[declared source dirs]`, with no individual module below
+  [Y]% in those dirs.  <!-- two-axis coverage; tune X (60-90) and Y (40-70) -->
 
 ## Edge Cases
 - REQ-EC-001: WHEN [edge condition] THE SYSTEM SHALL [handling behavior]
 - REQ-EC-002: IF [boundary condition] THEN THE SYSTEM SHALL [handling behavior]
+
+## Premortem (required, except for Bugfix)
+
+The top 5 ways this will fail in production, each with an EARS-form
+mitigation. Every entry must have a corresponding requirement (existing
+or added) that drives at least one test.
+
+| # | Failure mode | Mitigation (EARS) | Drives REQ |
+| - | --- | --- | --- |
+| 1 | [e.g. Mock returns sync; production returns coroutine. Tests pass; routes fail.] | [e.g. THE SYSTEM SHALL include a mock-parity contract test asserting the fake returns awaitable values for every async DB method used.] | [REQ-...] |
+| 2 | [...] | [...] | [REQ-...] |
+| 3 | [...] | [...] | [REQ-...] |
+| 4 | [...] | [...] | [REQ-...] |
+| 5 | [...] | [...] | [REQ-...] |
 
 ## Out of Scope
 - [Feature/behavior explicitly excluded]
@@ -316,6 +333,28 @@ Use this when the user requests a written context document for their project
 - **Properties to verify:** [invariants from requirements]
 - **Integration points:** [external systems, databases]
 - **Edge cases:** [from requirements edge cases section]
+- **Test tiers in scope:** unit, integration, smoke / functional, quality_gate, characterization (where applicable). See references/test-tiers.md.
+- **Coverage requirement:** aggregate ≥ X% with no module below Y% (REQ-NF-COV).
+
+## Boundary Inventory (required for any system with I/O or multiple components)
+
+Every place where the runtime model changes — sync→async, mock→real,
+FE→BE, in-process→out-of-process, JSON→object, HTTP→SSE/WebSocket —
+must appear here with at least one acceptance test. A boundary without
+a test is a blocker.
+
+| # | Boundary | From | To | Acceptance test |
+| - | --- | --- | --- | --- |
+| 1 | HTTP entry | external client | [framework] route | TC-SMOKE-001 |
+| 2 | Sync→Async DB | route handler | [async DB driver] | TC-PARITY-001 |
+| 3 | FE→BE | [frontend] fetch | /api/[...] | TC-SMOKE-002 |
+| 4 | Persisted state | repository | [database] | TC-INTEG-LIVE-001 |
+| 5 | Streaming | backend SSE/WS | client EventSource | TC-SMOKE-003 |
+| ... | ... | ... | ... | ... |
+
+For pure-library projects with no I/O: state explicitly
+*"No service-to-service boundaries; all behaviour is in-process pure
+functions."* The section is then satisfied.
 
 ## Dependencies
 - [Library/service]: [version] — [purpose]
